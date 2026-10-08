@@ -75,6 +75,27 @@ def test_signup_rejects_duplicate_participant():
     assert activities[activity_name]["participants"] == original_participants
 
 
+def test_signup_rejects_full_activity():
+    # Arrange
+    activity_name = "Chess Club"
+    activity = activities[activity_name]
+    activity["participants"] = [
+        f"student{i}@mergington.edu"
+        for i in range(activity["max_participants"])
+    ]
+    email = "newstudent@mergington.edu"
+
+    # Act
+    response = client.post(
+        f"/activities/{activity_name}/signup", params={"email": email}
+    )
+
+    # Assert
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Activity is full"
+    assert email not in activity["participants"]
+
+
 def test_signup_returns_not_found_for_unknown_activity():
     # Arrange
     activity_name = "Unknown Activity"
